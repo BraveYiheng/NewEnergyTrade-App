@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+actor "供应商" as Supplier
+
+rectangle "系统" {
+    usecase "产品添加发布" as ProductAddPublish
+    usecase "产品编辑与删除" as ProductEditDelete
+}
+
+Supplier --> ProductAddPublish : 点击添加产品按钮
+ProductAddPublish --> Supplier : 填写产品各项信息（名称、类别、描述、上传图片、设定价格、库存数量等）
+Supplier --> ProductAddPublish : 提交产品信息
+ProductAddPublish --> System : 存储产品信息到数据库
+System --> ProductAddPublish : 在平台展示界面实时展示
+
+Supplier --> ProductEditDelete : 选择已发布产品
+ProductEditDelete --> Supplier : 进行编辑（调整价格、更新库存、完善描述等）或删除操作
+Supplier --> ProductEditDelete : 确认编辑或删除操作
+ProductEditDelete --> System : 更新数据库（编辑时）或移除产品信息（删除时）
+@enduml

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yiheng.springboot.mapper.OrderMapper">
+
+    <!-- 定义结果映射，用于将查询结果映射到Order实体以及关联的User和Product实体上 -->
+    <resultMap id="OrderWithRelationsResultMap" type="com.yiheng.springboot.domain.Order">
+        <!-- 映射订单表的基本字段 -->
+        <id property="orderId" column="order_id" />
+        <result property="orderNumber" column="order_number" />
+        <result property="purchaserId" column="purchaser_id" />
+        <result property="supplierId" column="supplier_id" />
+        <result property="orderAmount" column="order_amount" />
+        <result property="orderStatus" column="order_status" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="productId" column="product_id" />
+        <result property="quantity" column="quantity" />
+        <result property="unitPrice" column="unit_price" />
+        <result property="categoryName" column="category_name" />
+
+        <!-- 关联采购者用户信息 -->
+        <association property="purchaser" javaType="com.yiheng.springboot.domain.User">
+            <id property="userId" column="purchaser_user_id" />
+            <result property="companyName" column="purchaser_company_name" />
+            <result property="contactPerson" column="purchaser_contact_person" />
+            <result property="contactNumber" column="purchaser_contact_number" />
+            <result property="email" column="purchaser_email" />
+            <result property="password" column="purchaser_password" />
+            <result property="role" column="purchaser_role" />
+            <result property="createTime" column="purchaser_create_time" />
+        </association>
+
+        <!-- 关联供应商用户信息 -->
+        <association property="supplier" javaType="com.yiheng.springboot.domain.User">
+            <id property="userId" column="supplier_user_id" />
+            <result property="companyName" column="supplier_company_name" />
+            <result property="contactPerson" column="supplier_contact_person" />
+            <result property="contactNumber" column="supplier_contact_number" />
+            <result property="email" column="supplier_email" />
+            <result property="password" column="supplier_password" />
+            <result property="role" column="supplier_role" />
+            <result property="createTime" column="supplier_create_time" />
+        </association>
+
+        <!-- 关联产品信息 -->
+        <association property="product" javaType="com.yiheng.springboot.domain.Product">
+            <id property="productId" column="product_product_id" />
+            <result property="productName" column="product_product_name" />
+            <result property="productCategoryId" column="product_product_category_id" />
+            <result property="technicalParameters" column="product_product_technical_parameters" />
+            <result property="productDescription" column="product_product_description" />
+            <result property="imagePath" column="product_product_image_path" />
+            <result property="price" column="product_product_price" />
+            <result property="stockQuantity" column="product_product_stock_quantity" />
+            <result property="supplierId" column="product_product_supplier_id" />
+            <result property="createTime" column="product_product_create_time" />
+            <result property="categoryName" column="category_name" />
+        </association>
+    </resultMap>
+
+    <!-- 定义查询语句 -->
+    <select id="findAllOrdersWithRelations" resultMap="OrderWithRelationsResultMap">
+        SELECT
+            o.order_id,
+            o.order_number,
+            o.purchaser_id,
+            o.supplier_id,
+            o.order_amount,
+            o.order_status,
+            o.create_time,
+            o.update_time,
+            o.product_id,
+            o.quantity,
+            o.unit_price,
+            -- 采购者用户相关字段
+            u1.user_id as purchaser_user_id,
+            u1.company_name as purchaser_company_name,
+            u1.contact_person as purchaser_contact_person,
+            u1.contact_number as purchaser_contact_number,
+            u1.email as purchaser_email,
+            u1.password as purchaser_password,
+            u1.role as purchaser_role,
+            u1.create_time as purchaser_create_time,
+            -- 供应商用户相关字段
+            u2.user_id as supplier_user_id,
+            u2.company_name as supplier_company_name,
+            u2.contact_person as supplier_contact_person,
+            u2.contact_number as supplier_contact_number,
+            u2.email as supplier_email,
+            u2.password as supplier_password,
+            u2.role as supplier_role,
+            u2.create_time as supplier_create_time,
+            -- 产品相关字段
+            p.product_id as product_product_id,
+            p.product_name as product_product_name,
+            p.product_category_id as product_product_category_id,
+            p.technical_parameters as product_product_technical_parameters,
+            p.product_description as product_product_description,
+            p.image_path as product_product_image_path,
+            p.price as product_product_price,
+            p.stock_quantity as product_product_stock_quantity,
+            p.supplier_id as product_product_supplier_id,
+            p.create_time as product_product_create_time,
+            c.category_name as category_name
+
+        FROM
+            `order` o
+                LEFT JOIN
+            `user` u1 ON o.purchaser_id = u1.user_id
+                LEFT JOIN
+            `user` u2 ON o.supplier_id = u2.user_id
+                LEFT JOIN
+            `product` p ON o.product_id = p.product_id
+                 LEFT JOIN
+            `product_categories` c ON p.product_category_id = c.category_id
+    </select>
+
+
+    <select id="findOrdersByUserId" resultMap="OrderWithRelationsResultMap">
+        SELECT
+            o.order_id,
+            o.order_number,
+            o.purchaser_id,
+            o.supplier_id,
+            o.order_amount,
+            o.order_status,
+            o.create_time,
+            o.update_time,
+            o.product_id,
+            o.quantity,
+            o.unit_price,
+            -- 采购者用户相关字段
+            u1.user_id as purchaser_user_id,
+            u1.company_name as purchaser_company_name,
+            u1.contact_person as purchaser_contact_person,
+            u1.contact_number as purchaser_contact_number,
+            u1.email as purchaser_email,
+            u1.password as purchaser_password,
+            u1.role as purchaser_role,
+            u1.create_time as purchaser_create_time,
+            -- 供应商用户相关字段
+            u2.user_id as supplier_user_id,
+            u2.company_name as supplier_company_name,
+            u2.contact_person as supplier_contact_person,
+            u2.contact_number as supplier_contact_number,
+            u2.email as supplier_email,
+            u2.password as supplier_password,
+            u2.role as supplier_role,
+            u2.create_time as supplier_create_time,
+            -- 产品相关字段
+            p.product_id as product_product_id,
+            p.product_name as product_product_name,
+            p.product_category_id as product_product_category_id,
+            p.technical_parameters as product_product_technical_parameters,
+            p.product_description as product_product_description,
+            p.image_path as product_product_image_path,
+            p.price as product_product_price,
+            p.stock_quantity as product_product_stock_quantity,
+            p.supplier_id as product_product_supplier_id,
+            p.create_time as product_product_create_time,
+            c.category_name as category_name
+        FROM
+            `order` o
+                LEFT JOIN
+            `user` u1 ON o.purchaser_id = u1.user_id
+                LEFT JOIN
+            `user` u2 ON o.supplier_id = u2.user_id
+                LEFT JOIN
+            `product` p ON o.product_id = p.product_id
+                LEFT JOIN
+            `product_categories` c ON p.product_category_id = c.category_id
+        WHERE
+            o.purchaser_id = #{userId} or o.supplier_id = #{userId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE `order` SET order_status = #{status}, update_time = NOW() WHERE order_id = #{orderId}
+    </update>
+</mapper>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>采购商主页面</title>
+    <link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="purchaser.css">
+    <script src="../js/vue.js"></script>
+    <script src="../js/1.7.2axios.js"></script>
+    <script src="../element-ui/lib/index.js"></script>
+    <style>
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <div class="header">
+        <div class="header-title">新能源交易平台</div>
+        <div class="header-right">
+            <span v-if="userId" class="header-welcome">欢迎您</span>
+            <span class="header-time">{{ currentTime }}</span>
+        </div>
+    </div>
+    <div class="container">
+        <div :class="['sidebar', {collapsed: !sidebarOpen}]">
+            <button @click="toggleSidebar" class="sidebar-toggle-btn">
+                {{ sidebarOpen ? '<<' : '>>' }}
+            </button>
+            <ul v-show="sidebarOpen">
+                <li v-for="item in menuItems" :key="item.page"
+                    @click="changePage(item.page)"
+                    @mouseenter="hoveredMenu = item.page"
+                    @mouseleave="hoveredMenu = null"
+                    :class="{hovered: hoveredMenu === item.page}">
+                    {{ item.label }}
+                </li>
+            </ul>
+        </div>
+        <div class="content" style="padding:20px;">
+            <iframe :src="currentPage" frameborder="0" style="width:100%;height:100vh;" id="contentFrame"></iframe>
+        </div>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            userId: null,
+            currentPage: '',
+            sidebarOpen: true,
+            hoveredMenu: null,
+            currentTime: '',
+            menuItems: [
+                {label: '个人信息', page: 'purchaser-info.html'},
+                {label: '采购商城', page: 'purchaser-product.html'},
+                {label: '我的订单', page: 'purchaser-order.html'},
+                {label: '交易评价', page: 'purchaser-evaluation.html'},
+                {label: '意见反馈', page: 'purchaser-feedback.html'}
+            ]
+        },
+        created() {
+            const urlParams = new URLSearchParams(window.location.search);
+            this.userId = urlParams.get('id');
+            this.currentPage = 'purchaser-info.html?id=' + this.userId;
+            this.updateTime();
+            setInterval(this.updateTime, 1000);
+        },
+        methods: {
+            changePage(page) {
+                this.currentPage = page + '?id=' + this.userId;
+            },
+            toggleSidebar() {
+                this.sidebarOpen = !this.sidebarOpen;
+            },
+            updateTime() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = (now.getMonth()+1).toString().padStart(2,'0');
+                const d = now.getDate().toString().padStart(2,'0');
+                const h = now.getHours().toString().padStart(2,'0');
+                const min = now.getMinutes().toString().padStart(2,'0');
+                const s = now.getSeconds().toString().padStart(2,'0');
+                this.currentTime = `${y}-${m}-${d} ${h}:${min}:${s}`;
+            }
+        }
+    });
+</script>
+</body>
+</html>

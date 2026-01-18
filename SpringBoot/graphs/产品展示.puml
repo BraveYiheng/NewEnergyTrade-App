@@ -1,0 +1,16 @@
+@startuml
+left to right direction
+actor "用户（供应商、采购商）" as User
+
+rectangle "系统" {
+    usecase "分类展示" as CategoryDisplay
+    usecase "搜索功能" as SearchFunction
+}
+
+User --> CategoryDisplay : 查看分类展示
+CategoryDisplay --> System : 按预设类别标准分类
+System --> CategoryDisplay : 展示分类产品
+User --> SearchFunction : 输入关键词、选择类别、设定价格区间等
+SearchFunction --> System : 根据多维度条件筛选
+System --> SearchFunction : 展示符合要求产品列表
+@enduml

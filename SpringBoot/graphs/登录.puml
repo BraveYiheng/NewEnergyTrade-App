@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+actor "企业用户" as User
+
+rectangle "系统" {
+    usecase "注册" as Register
+    usecase "登录" as Login
+}
+
+User --> Register : 输入企业名称、联系人、联系方式、邮箱、密码等信息
+Register --> System : 验证信息合法性
+System --> Register : 完成注册
+
+User --> Login : 输入邮箱和密码
+Login --> System : 验证通过
+System --> Login : 根据角色显示相应界面
+@enduml

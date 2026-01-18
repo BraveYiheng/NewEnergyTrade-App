@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+actor "用户" as User
+actor "平台管理员" as Admin
+
+rectangle "系统" {
+    usecase "意见反馈提交" as FeedbackSubmit
+    usecase "反馈信息处理" as FeedbackProcess
+    usecase "查看反馈记录及结果" as ViewFeedbackInfo
+}
+
+User --> FeedbackSubmit : 描述问题/建议并提交
+FeedbackSubmit --> System : 传递反馈信息给管理员
+Admin --> FeedbackProcess : 接收、整理反馈信息，优化改进平台
+FeedbackProcess --> System : 记录处理情况
+
+User --> ViewFeedbackInfo : 查看提交的反馈记录和处理结果
+ViewFeedbackInfo --> System : 获取并展示相应信息
+@enduml

@@ -1,0 +1,14 @@
+
+@startuml
+title 用户登录流程
+start
+:前端收集登录信息;
+:前端发送到后端;
+if (后端验证邮箱和密码不匹配) then (yes)
+    :返回错误提示;
+else (no)
+    :匹配生成登录凭证并返回用户信息;
+endif
+stop
+@enduml
+

@@ -1,0 +1,71 @@
+@startuml
+!define TABLE(x) class x << (T, #FFFFFF) >>
+!define VIEW(x) class x << (V, #FFFFFF) >>
+!define ENTITY(x) class x << (E, #FFFFFF) >>
+
+hide circle
+hide methods
+
+ENTITY("User") {
+    +user_id : int
+    +company_name : varchar
+    +contact_person : varchar
+    +contact_number : varchar
+    +email : varchar
+    +password : varchar
+    +role : tinyint
+    +create_time : datetime
+}
+
+ENTITY("Product") {
+    +product_id : int
+    +product_name : varchar
+    +product_category : varchar
+    +technical_parameters : text
+    +product_description : text
+    +image_path : varchar
+    +price : decimal
+    +stock_quantity : int
+    +supplier_id : int
+    +create_time : datetime
+}
+
+
+ENTITY("Order") {
+    +order_id : int
+    +order_number : varchar
+    +purchaser_id : int
+    +supplier_id : int
+    +order_amount : decimal
+    +order_status : tinyint
+    +create_time : datetime
+    +update_time : datetime
+    +product_id : int
+    +quantity : int
+    +unit_price : decimal
+}
+
+ENTITY("Evaluation") {
+    +evaluation_id : int
+    +order_id : int
+    +from_user_id : int
+    +from_user_id : int
+    +star_rating : tinyint
+    +comment : text
+    +create_time : datetime
+}
+
+ENTITY("Feedback") {
+    +feedback_id : int
+    +user_id : int
+    +content : text
+    +create_time : datetime
+}
+
+User "1" -- "*" Product : "发布"
+User "1" -- "*" Order : "参与交易（采购商/供应商）"
+User "1" -- "*" Evaluation : "参与评价"
+User "1" -- "*" Feedback : "提交"
+Product "1" -- "*" Order : "关联"
+Order "1" -- "*" Evaluation : "对应"
+@enduml

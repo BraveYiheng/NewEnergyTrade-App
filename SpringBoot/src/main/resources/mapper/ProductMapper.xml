@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yiheng.springboot.mapper.ProductMapper">
+
+    <!-- 结果映射，严格对应Product.java字段 -->
+    <resultMap id="ProductResultMap" type="com.yiheng.springboot.domain.Product">
+        <id property="productId" column="product_id" />
+        <result property="productName" column="product_name" />
+        <result property="productCategoryId" column="product_category_id" />
+        <result property="technicalParameters" column="technical_parameters" />
+        <result property="productDescription" column="product_description" />
+        <result property="imagePath" column="image_path" />
+        <result property="price" column="price" />
+        <result property="stockQuantity" column="stock_quantity" />
+        <result property="supplierId" column="supplier_id" />
+        <result property="createTime" column="create_time" />
+            <result property="categoryName" column="category_name" />
+            <result property="supplierName" column="contact_person" />
+            <result property="companyName" column="company_name" />
+            <result property="contactPhone" column="contact_number" />
+            <result property="email" column="email" />
+    </resultMap>
+
+    <!-- 查询所有产品 -->
+    <select id="selectAll" resultMap="ProductResultMap">
+        SELECT * FROM product
+            left join product_categories
+                      on product.product_category_id = product_categories.category_id
+            left join user
+                      on product.supplier_id = user.user_id
+    </select>
+
+    <!-- 按主键查询产品 -->
+    <select id="selectById" resultMap="ProductResultMap" parameterType="Integer">
+        SELECT * FROM product
+                          left join product_categories
+                                    on product.product_category_id = product_categories.category_id
+                          left join user
+                                    on product.supplier_id = user.user_id
+        WHERE product_id = #{productId}
+    </select>
+    <select id="selectBySupplierId" resultMap="ProductResultMap" parameterType="Integer">
+        SELECT * FROM product
+                          left join product_categories
+                                    on product.product_category_id = product_categories.category_id
+                          left join user
+                                    on product.supplier_id = user.user_id
+        WHERE product.supplier_id = #{supplierId}
+    </select>
+
+    <!-- 按条件搜索产品（动态SQL） -->
+    <select id="searchProducts" resultMap="ProductResultMap" parameterType="com.yiheng.springboot.domain.Product">
+        SELECT * FROM product
+        left join product_categories
+        on product.product_category_id = product_categories.category_id
+        left join user
+        on product.supplier_id = user.user_id
+        <where>
+            <if test="productName != null and productName != ''">
+                AND product_name LIKE CONCAT('%', #{productName}, '%')
+            </if>
+            <if test="productCategoryId != null">
+                AND product_category_id = #{productCategoryId}
+            </if>
+            <if test="minPrice != null">
+                AND price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND price &lt;= #{maxPrice}
+            </if>
+        </where>
+    </select>
+
+
+
+
+</mapper> 

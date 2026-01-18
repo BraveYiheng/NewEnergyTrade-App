@@ -1,0 +1,36 @@
+@startuml
+left to right direction
+actor "采购商" as Buyer
+actor "供应商" as Supplier
+
+rectangle "系统" {
+    usecase "下单" as PlaceOrder
+    usecase "付款" as MakePayment
+    usecase "订单跟踪" as TrackOrder
+    usecase "确认收货" as ConfirmReceipt
+    usecase "查看交易记录" as ViewTransactionRecords
+    usecase "交易评价" as TradeEvaluation
+}
+
+Buyer --> PlaceOrder : 选择产品及数量生成订单并提交
+PlaceOrder --> System : 存储订单信息，进入后续流程
+
+Buyer --> MakePayment : 选择支付方式完成付款
+MakePayment --> System : 更新订单状态，通知供应商发货
+Supplier --> MakePayment : 获取发货通知
+
+Buyer --> TrackOrder : 查看订单状态和进度
+Supplier --> TrackOrder : 查看订单状态和进度
+TrackOrder --> System : 获取实时订单状态信息
+
+Buyer --> ConfirmReceipt : 确认收到货物
+ConfirmReceipt --> System : 更新订单状态
+
+Buyer --> ViewTransactionRecords : 查看历史订单信息
+Supplier --> ViewTransactionRecords : 查看历史订单信息
+ViewTransactionRecords --> System : 查询数据库并展示
+
+Buyer --> TradeEvaluation : 对交易进行评价
+Supplier --> TradeEvaluation : 对交易进行评价
+TradeEvaluation --> System : 展示评价结果在企业信息页面
+@enduml

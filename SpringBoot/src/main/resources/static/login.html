@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/vue@3.4.27/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios@1.7.2/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2.0.6/css/pico.css">
+    <title>用户登录注册</title>
+    <link rel="stylesheet" type="text/css" href="../css/login.css">
+    <style>
+        body {
+            background: #f5f7fa;
+        }
+        .center-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 6px 32px 0 rgba(0,0,0,0.08);
+            padding: 48px 40px 36px 40px;
+            width: 410px;
+            max-width: 98vw;
+            position: relative;
+            transition: box-shadow 0.3s;
+        }
+        .form-card h1 {
+            text-align: center;
+            margin-bottom: 32px;
+            color: #409EFF;
+            font-size: 2.3rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 1.08rem;
+            margin-bottom: 8px;
+            margin-top: 10px;
+            display: block;
+            color: #333;
+        }
+        .switch-link {
+            color: #409EFF;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 18px;
+            display: block;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        .switch-link:hover {
+            color: #66b1ff;
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #f56c6c;
+            font-size: 12px;
+            margin-bottom: 4px;
+            margin-top: -4px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+        input[type="text"], input[type="email"], input[type="password"], select {
+            border-radius: 12px;
+            border: 1.5px solid #dcdfe6;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-bottom: 14px;
+            height: 44px;
+            font-size: 1.08rem;
+            padding: 0 16px;
+            background: #f8fafc;
+        }
+        input:focus, select:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 0 2px #ecf5ff;
+            background: #fff;
+        }
+        input.error, select.error {
+            border-color: #f56c6c;
+            background: #fff0f0;
+        }
+        button[type="submit"], button[type="button"] {
+            width: 100%;
+            border-radius: 22px;
+            font-size: 1.15rem;
+            margin-top: 18px;
+            padding: 12px 0;
+            background: linear-gradient(90deg, #409EFF 60%, #66b1ff 100%);
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 2px 8px rgba(64,158,255,0.08);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        button[type="submit"]:hover:not(:disabled) {
+            background: linear-gradient(90deg, #66b1ff 60%, #409EFF 100%);
+            box-shadow: 0 4px 16px rgba(64,158,255,0.13);
+        }
+        button:disabled {
+            background: #b3d8ff;
+            color: #fff;
+            cursor: not-allowed;
+        }
+        .password-row {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .password-row input {
+            flex: 1;
+            padding-right: 40px;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #bbb;
+            font-size: 20px;
+        }
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.4s;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+        .message-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            background: #409EFF;
+            color: #fff;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(64,158,255,0.1);
+            display: none;
+        }
+        .message-bar.show {
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .form-card {
+                padding: 18px 4vw 12px 4vw;
+                width: 99vw;
+            }
+            .form-card h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="center-container">
+<div id="app">
+    <div :class="['message-bar', messageBar.show ? 'show' : '']">{{ messageBar.text }}</div>
+    <!-- 登录页面 -->
+    <transition name="fade">
+    <div class="form-card" v-show="showLogin">
+        <h1>用户登录</h1>
+        <form @submit.prevent="login">
+            <label for="login-email">邮箱：</label>
+            <input type="email" id="login-email" v-model="loginForm.email" @blur="validateLoginEmail" :class="{'error': loginEmailError}">
+            <span v-if="loginEmailError" class="error-message">{{ loginEmailError }}</span>
+            <label for="login-password">密码：</label>
+            <div style="position:relative;">
+                <input :type="showLoginPassword ? 'text' : 'password'" id="login-password" v-model="loginForm.password" @blur="validateLoginPassword" :class="{'error': loginPasswordError}" style="padding-right:36px;">
+                <span class="password-toggle" @click="showLoginPassword = !showLoginPassword">
+                    <span v-if="showLoginPassword">🙈</span>
+                    <span v-else>👁️</span>
+                </span>
+            </div>
+            <span v-if="loginPasswordError" class="error-message">{{ loginPasswordError }}</span>
+            <button type="submit" :disabled="loginLoading">{{ loginLoading ? '登录中...' : '登录' }}</button>
+            <p class="switch-link" @click="showRegisterForm">还没有账号？去注册</p>
+        </form>
+    </div>
+    </transition>
+    <!-- 注册页面 -->
+    <transition name="fade">
+    <div class="form-card" v-show="showRegister">
+        <h1>用户注册</h1>
+        <form @submit.prevent="register">
+            <label for="companyName">企业名称：</label>
+            <input type="text" id="companyName" v-model="registerForm.companyName" @blur="validateCompanyName" :class="{'error': companyNameError}">
+            <span v-if="companyNameError" class="error-message">{{ companyNameError }}</span>
+            <label for="contactPerson">联系人：</label>
+            <input type="text" id="contactPerson" v-model="registerForm.contactPerson" @blur="validateContactPerson" :class="{'error': contactPersonError}">
+            <span v-if="contactPersonError" class="error-message">{{ contactPersonError }}</span>
+            <label for="contactNumber">联系方式：</label>
+            <input type="text" id="contactNumber" v-model="registerForm.contactNumber" @blur="validateContactNumber" :class="{'error': contactNumberError}">
+            <span v-if="contactNumberError" class="error-message">{{ contactNumberError }}</span>
+            <label for="register-email">邮箱：</label>
+            <input type="text" id="register-email" v-model="registerForm.email" @blur="checkEmailExist" :class="{'error': registerEmailError}">
+            <span v-if="registerEmailError" class="error-message">{{ registerEmailError }}</span>
+            <label for="register-password">密码：</label>
+            <div class="password-row">
+                <input :type="showRegisterPassword ? 'text' : 'password'" id="register-password" v-model="registerForm.password" @blur="validateRegisterPassword" :class="{'error': registerPasswordError}">
+                <span class="password-toggle" @click="showRegisterPassword = !showRegisterPassword">
+                    <span v-if="showRegisterPassword">🙈</span>
+                    <span v-else>👁️</span>
+                </span>
+            </div>
+            <span v-if="registerPasswordError" class="error-message">{{ registerPasswordError }}</span>
+            <label for="role">角色：</label>
+            <select id="role" v-model="registerForm.role" @change="validateRole" :class="{'error': roleError}">
+                <option value="0">供应商</option>
+                <option value="1">采购商</option>
+            </select>
+            <span v-if="roleError" class="error-message">{{ roleError }}</span>
+            <button type="submit" :disabled="registerButtonDisabled || registerLoading">{{ registerLoading ? '注册中...' : '注册' }}</button>
+            <p class="switch-link" @click="showLoginForm">已有账号？去登录</p>
+        </form>
+    </div>
+    </transition>
+</div>
+</div>
+<script>
+    const { createApp } = Vue;
+
+    // 提取通用的邮箱格式验证函数
+    function validateEmail(email) {
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+    }
+
+    createApp({
+        data() {
+            return {
+                // 登录表单数据及错误信息
+                loginForm: {
+                    email: '',
+                    password: ''
+                },
+                loginEmailError: '',
+                loginPasswordError: '',
+                // 注册表单数据及错误信息
+                registerForm: {
+                    companyName: '',
+                    contactPerson: '',
+                    contactNumber: '',
+                    email: '',
+                    password: '',
+                    role: null
+                },
+                companyNameError: '', //为空字符串时不渲染显示
+                contactPersonError: '',
+                contactNumberError: '',
+                registerEmailError: '',
+                registerPasswordError: '',
+                roleError: '',
+                // 用于控制显示登录页面还是注册页面
+                showLogin: true,
+                showRegister: false,
+                showLoginPassword: false,
+                showRegisterPassword: false,
+                loginLoading: false,
+                registerLoading: false,
+                registerButtonDisabled: false,
+                messageBar: { show: false, text: '' }
+            }
+        },
+        methods: {
+            showMessage(msg) {
+                this.messageBar.text = msg;
+                this.messageBar.show = true;
+                setTimeout(() => { this.messageBar.show = false; }, 2000);
+            },
+            // 登录表单验证方法，使用提取的邮箱验证函数
+            validateLoginEmail() {
+                if (!this.loginForm.email.trim()) {
+                    this.loginEmailError = '请输入邮箱地址';
+                } else if (!validateEmail(this.loginForm.email)) {
+                    this.loginEmailError = '请输入正确的邮箱格式';
+                } else {
+                    this.loginEmailError = '';
+                }
+            },
+            validateLoginPassword() {
+                if (!this.loginForm.password.trim()) {
+                    this.loginPasswordError = '请输入密码';
+                } else if (this.loginForm.password.length < 6) {
+                    this.loginPasswordError = '密码长度至少为6位';
+                } else {
+                    this.loginPasswordError = '';
+                }
+            },
+            // 注册表单验证方法，使用提取的邮箱验证函数
+            validateCompanyName() {
+                if (!this.registerForm.companyName.trim()) {
+                    this.companyNameError = '请输入企业名称';
+                } else {
+                    this.companyNameError = '';
+                }
+            },
+            validateContactPerson() {
+                if (!this.registerForm.contactPerson.trim()) {
+                    this.contactPersonError = '请输入联系人姓名';
+                } else {
+                    this.contactPersonError = '';
+                }
+            },
+            validateContactNumber() {
+                const phonePattern = /^1[3-9]\d{9}$/;
+                if (!this.registerForm.contactNumber.trim()) {
+                    this.contactNumberError = '请输入手机号';
+                } else if (!phonePattern.test(this.registerForm.contactNumber)) {
+                    this.contactNumberError = '手机号格式不正确';
+                } else {
+                    this.contactNumberError = '';
+                }
+            },
+            validateRegisterPassword() {
+                if (!this.registerForm.password.trim()) {
+                    this.registerPasswordError = '请输入密码';
+                } else if (this.registerForm.password.length < 6) {
+                    this.registerPasswordError = '密码长度至少为6位';
+                } else {
+                    this.registerPasswordError = '';
+                }
+            },
+            validateRole() {
+                if (this.registerForm.role === null) {
+                    this.roleError = '请选择角色';
+                } else {
+                    this.roleError = '';
+                }
+            },
+            // 登录逻辑，添加根据角色跳转页面的功能
+            async login() {
+                this.validateLoginEmail();
+                this.validateLoginPassword();
+                if (!this.loginEmailError &&!this.loginPasswordError) {
+                    this.loginLoading = true;
+                    try {
+                        const loginForm = {
+                            email: this.loginForm.email,
+                            password: this.loginForm.password
+                        };
+                        const response = await axios.post('/user/login', loginForm);
+                        if (response.data.success) {
+                            const user= response.data.user;
+                            console.log(user);
+                            let targetUrl = '';
+                            if(response.data.user.role == 0){
+                                targetUrl = '/supplier/supplier.html';
+                            }
+                            else if(response.data.user.role == 1){
+                                targetUrl = '/purchaser/purchaser.html';
+                            }
+                            window.location.href = `${targetUrl}?id=${user.userId}`;
+                        }
+                        else {
+                            this.showMessage(response.data.message);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        this.showMessage('登录出现错误，请稍后再试');
+                    }
+                    this.loginLoading = false;
+                }
+            },
+            // 注册逻辑
+            async register() {
+                this.validateCompanyName();
+                this.validateContactPerson();
+                this.validateContactNumber();
+                this.validateRegisterPassword();
+                this.validateRole();
+                if (!this.companyNameError &&!this.contactPersonError &&!this.contactNumberError &&!this.registerPasswordError &&!this.roleError) {
+                    this.registerLoading = true;
+                    try {
+                        const response = await axios.post('/user/register', this.registerForm);
+                        if (response.data) {
+                            this.showMessage('注册成功，2秒后跳转登录页面');
+                            setTimeout(() => {
+                                this.showLoginForm();
+                            }, 2000);
+                        }
+                        else {
+                            this.showMessage('注册失败');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        this.showMessage('注册出现错误，请稍后再试');
+                    }
+                    this.registerLoading = false;
+                }
+            },
+            // 切换显示登录页面方法
+            showLoginForm() {
+                this.showLogin = true;
+                this.showRegister = false;
+            },
+            // 切换显示注册页面方法
+            showRegisterForm() {
+                this.showLogin = false;
+                this.showRegister = true;
+            },
+            // 注册时邮箱验证逻辑，修正请求地址拼接问题
+            async checkEmailExist() {
+                const email = this.registerForm.email;
+                // 先使用验证函数验证邮箱格式是否正确
+                if (!validateEmail(email)) {
+                    this.registerEmailError = '请输入正确的邮箱格式';
+                    this.registerButtonDisabled = true;
+                    return;
+                }
+                try {
+                    const url ='/user/checkEmail?email='+this.registerForm.email;
+                    const response = await axios.get(url);
+                    if (response.data) {
+                        this.registerEmailError = '该邮箱已存在，请登录';
+                        // 当邮箱存在时，设置注册按钮为禁用状态
+                        this.registerButtonDisabled = true;
+                    } else {
+                        this.registerEmailError = '';
+                        this.registerButtonDisabled = false;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.registerEmailError = '验证邮箱是否存在时出错，请稍后再试';
+                    this.registerButtonDisabled = true;
+                }
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+
+</html>

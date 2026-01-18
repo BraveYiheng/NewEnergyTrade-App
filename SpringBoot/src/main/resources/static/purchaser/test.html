@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 引入 Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Font Awesome 图标库 -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Chart.js 用于数据可视化 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <title>新能源交易平台</title>
+  <!-- 配置 Tailwind CSS -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2E8B57', // 深绿色作为主色调
+            secondary: '#4169E1', // 深蓝色作为辅助色
+            accent: '#9370DB', // 紫色作为强调色
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    /* 全局配置 */
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .text-shadow-lg {
+        text-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease-in-out forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    }
+
+    /* 头部导航样式 */
+    .header-container {
+      @apply bg-primary text-white py-4 px-6 flex items-center justify-between shadow-lg;
+    }
+    .header-title {
+      @apply text-2xl font-bold;
+    }
+    .header-right {
+      @apply flex items-center gap-4;
+    }
+    .welcome-message {
+      @apply text-sm md:text-base font-medium transition-all duration-300 ease-in-out;
+    }
+    .time-display {
+      @apply text-sm md:text-base font-mono tracking-wider;
+    }
+
+    /* 下拉菜单样式 */
+    .welcome-dropdown {
+      @apply absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 transform scale-95 opacity-0 pointer-events-none transition-all duration-300 origin-top-right;
+    }
+    .welcome-container:hover .welcome-dropdown {
+      @apply opacity-100 scale-100 pointer-events-auto;
+    }
+    .dropdown-item {
+      @apply px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center;
+    }
+
+    /* 轮播图样式 */
+    .carousel-container {
+      @apply relative w-full h-[clamp(200px,40vw,400px)] overflow-hidden rounded-xl shadow-lg mb-8;
+    }
+    .carousel-slides {
+      @apply flex h-full transition-transform duration-700 ease-in-out;
+    }
+    .carousel-slide {
+      @apply min-w-full h-full relative;
+    }
+    .carousel-slide img {
+      @apply w-full h-full object-cover;
+    }
+    .carousel-overlay {
+      @apply absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-8 text-white;
+    }
+    .carousel-title {
+      @apply text-xl md:text-2xl font-bold mb-2 transform translate-y-4 opacity-0 transition-all duration-500 delay-100;
+    }
+    .carousel-desc {
+      @apply text-sm md:text-base opacity-0 transform translate-y-4 transition-all duration-500 delay-200;
+    }
+    .carousel-slide.active .carousel-title,
+    .carousel-slide.active .carousel-desc {
+      @apply opacity-100 translate-y-0;
+    }
+    .carousel-indicators {
+      @apply absolute bottom-4 left-0 right-0 flex justify-center gap-2;
+    }
+    .carousel-indicator {
+      @apply w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300 hover:bg-white/80;
+    }
+    .carousel-indicator.active {
+      @apply w-6 bg-white;
+    }
+    .carousel-control {
+      @apply absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white cursor-pointer transition-all duration-300 hover:bg-white/40;
+    }
+    .carousel-control.prev {
+      @apply left-2;
+    }
+    .carousel-control.next {
+      @apply right-2;
+    }
+
+    /* 平台简介卡片样式 */
+    .card-container {
+      @apply bg-white rounded-xl shadow-md p-6 mb-8 cursor-pointer transition-all duration-300 hover:shadow-lg;
+    }
+    .card-title {
+      @apply text-xl font-semibold mb-4 text-gray-800 flex items-center justify-between;
+    }
+    .card-content {
+      @apply text-gray-600 overflow-hidden transition-all duration-500 ease-in-out;
+    }
+    .card-icon {
+      @apply transition-transform duration-300;
+    }
+    .card-expanded .card-icon {
+      @apply transform rotate-180;
+    }
+    .card-expanded {
+      @apply shadow-xl bg-white/95 scale-[1.01];
+    }
+
+    /* 功能卡片样式 */
+    .feature-card {
+      @apply bg-white rounded-xl shadow-md p-5 cursor-pointer overflow-hidden relative transition-all duration-300;
+    }
+    .feature-card:hover {
+      @apply shadow-xl scale-[1.02] -translate-y-1;
+    }
+    .feature-icon-container {
+      @apply w-12 h-12 rounded-full flex items-center justify-center mr-3 transition-all duration-300;
+    }
+    .feature-card:hover .feature-icon-container {
+      @apply scale-110;
+    }
+    .feature-title {
+      @apply font-semibold text-gray-800 transition-colors duration-300;
+    }
+    .feature-card:hover .feature-title {
+      @apply text-primary;
+    }
+    .feature-text {
+      @apply text-sm text-gray-600;
+    }
+
+    /* 数据可视化区域样式 */
+    .data-viz-container {
+      @apply bg-white rounded-xl shadow-md p-6 mb-8;
+    }
+    .data-viz-title {
+      @apply text-xl font-semibold mb-4 text-gray-800;
+    }
+    .data-viz-card {
+      @apply bg-gray-50 rounded-lg p-4 mb-4;
+    }
+    .data-viz-card-title {
+      @apply text-base font-medium text-gray-700 mb-2;
+    }
+    .data-viz-card-value {
+      @apply text-2xl font-bold text-primary;
+    }
+    .data-viz-card-change {
+      @apply text-sm font-medium;
+    }
+    .data-viz-card-change.positive {
+      @apply text-green-500;
+    }
+    .data-viz-card-change.negative {
+      @apply text-red-500;
+    }
+
+    /* 新闻公告区域样式 */
+    .news-container {
+      @apply bg-white rounded-xl shadow-md p-6 mb-8;
+    }
+    .news-title {
+      @apply text-xl font-semibold mb-4 text-gray-800;
+    }
+    .news-item {
+      @apply border-b border-gray-100 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0;
+    }
+    .news-item-title {
+      @apply text-base font-medium text-gray-800 hover:text-primary transition-colors duration-200;
+    }
+    .news-item-date {
+      @apply text-xs text-gray-500 mt-1;
+    }
+
+    /* 页脚样式 */
+    .footer-container {
+      @apply bg-gray-800 text-white py-8 px-6;
+    }
+    .footer-content {
+      @apply max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8;
+    }
+    .footer-section-title {
+      @apply text-lg font-semibold mb-4;
+    }
+    .footer-link {
+      @apply text-gray-300 hover:text-white transition-colors duration-200;
+    }
+    .footer-social-icon {
+      @apply text-gray-300 hover:text-white transition-colors duration-200 text-xl mr-4;
+    }
+    .footer-copyright {
+      @apply text-center text-gray-400 mt-8 pt-4 border-t border-gray-700;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <!-- 头部导航 -->
+  <header class="header-container">
+    <div class="header-title">新能源交易平台</div>
+    <div class="header-right">
+      <!-- 欢迎信息及下拉 -->
+      <div class="relative cursor-pointer group">
+        <span class="welcome-message opacity-0 transition-opacity duration-500">
+          <i class="fa fa-user-circle mr-1 transition-all duration-300"></i>欢迎您
+        </span>
+        <!-- 下拉菜单 -->
+        <div class="welcome-dropdown">
+          <a href="#" class="dropdown-item">
+            <i class="fa fa-user-circle-o mr-2"></i>个人资料
+          </a>
+          <a href="#" class="dropdown-item">
+            <i class="fa fa-bell-o mr-2"></i>通知中心
+          </a>
+          <a href="#" class="dropdown-item">
+            <i class="fa fa-cog mr-2"></i>账户设置
+          </a>
+          <div class="border-t border-gray-100 my-1"></div>
+          <a href="#" class="dropdown-item text-red-500 hover:text-red-600 hover:bg-red-50">
+            <i class="fa fa-sign-out mr-2"></i>退出登录
+          </a>
+        </div>
+      </div>
+      <!-- 时间显示 -->
+      <span class="time-display flex items-center">
+        <i class="fa fa-clock-o mr-1"></i>
+        <span id="time-text">17:19:45</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- 主内容 -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- 轮播图 -->
+    <div class="carousel-container" id="carousel">
+      <div class="carousel-slides" id="carousel-slides">
+        <div class="carousel-slide active">
+          <img src="https://picsum.photos/id/1025/1200/400" alt="太阳能发电场">
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">绿色能源解决方案</h3>
+            <p class="carousel-desc">我们提供全方位的可再生能源解决方案，从太阳能到风能，为您的企业和家庭提供可持续的能源选择。</p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://picsum.photos/id/1036/1200/400" alt="风力发电场">
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">智能能源管理</h3>
+            <p class="carousel-desc">利用先进的 AI 技术，优化能源使用效率，降低成本，减少碳排放，为可持续发展贡献力量。</p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://picsum.photos/id/1043/1200/400" alt="水力发电站">
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">能源交易平台</h3>
+            <p class="carousel-desc">连接能源生产者和消费者，实现透明、高效的能源交易，推动清洁能源的广泛应用。</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-indicators" id="carousel-indicators">
+        <button class="carousel-indicator active" data-index="0"></button>
+        <button class="carousel-indicator" data-index="1"></button>
+        <button class="carousel-indicator" data-index="2"></button>
+      </div>
+      <button class="carousel-control prev" id="prev-slide">
+        <i class="fa fa-angle-left text-xl"></i>
+      </button>
+      <button class="carousel-control next" id="next-slide">
+        <i class="fa fa-angle-right text-xl"></i>
+      </button>
+    </div>
+
+    <!-- 平台简介卡片 -->
+    <div id="platform-card" class="card-container">
+      <div class="card-title">
+        <span>平台简介</span>
+        <i class="fa fa-chevron-down card-icon text-primary"></i>
+      </div>
+      <div class="card-content max-h-0">
+        <p>
+          欢迎使用新能源交易平台，我们致力于为您提供高效、透明的可再生能源交易服务。
+          通过数字化平台，连接能源生产者与消费者，促进清洁能源的广泛应用。
+        </p>
+        <div class="mt-6 flex justify-end">
+          <button class="bg-primary hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300" id="learn-more-btn">
+            <span>了解更多</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能卡片网格 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="feature-card bg-white rounded-xl shadow-md p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-3 transition-all duration-300 hover:scale-110">
+            <i class="fa fa-leaf text-primary text-xl"></i>
+          </div>
+          <h3 class="feature-title font-semibold text-gray-800 hover:text-primary transition-colors duration-300">清洁能源</h3>
+        </div>
+        <p class="feature-text text-sm text-gray-600">支持太阳能、风能、水能等多种可再生能源交易</p>
+      </div>
+      <div class="feature-card bg-white rounded-xl shadow-md p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3 transition-all duration-300 hover:scale-110">
+            <i class="fa fa-line-chart text-secondary text-xl"></i>
+          </div>
+          <h3 class="feature-title font-semibold text-gray-800 hover:text-primary transition-colors duration-300">实时市场</h3>
+        </div>
+        <p class="feature-text text-sm text-gray-600">提供实时能源价格数据和市场趋势分析</p>
+      </div>
+      <div class="feature-card bg-white rounded-xl shadow-md p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-3 transition-all duration-300 hover:scale-110">
+            <i class="fa fa-handshake-o text-accent text-xl"></i>
+          </div>
+          <h3 class="feature-title font-semibold text-gray-800 hover:text-primary transition-colors duration-300">智能交易</h3>
+        </div>
+        <p class="feature-text text-sm text-gray-600">AI 驱动的智能匹配系统，优化能源交易流程</p>
+      </div>
+    </div>
+
+    <!-- 数据可视化区域 -->
+    <div class="data-viz-container">
+      <h3 class="data-viz-title">市场数据概览</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="data-viz-card">
+          <p class="data-viz-card-title">太阳能价格</p>
+          <p class="data-viz-card-value" id="solar-price">¥0.45</p>
+          <p class="data-viz-card-change positive"><i class="fa fa-arrow-up mr-1"></i>2.3%</p>
+        </div>
+        <div class="data-viz-card">
+          <p class="data-viz-card-title">风能价格</p>
+          <p class="data-viz-card-value" id="wind-price">¥0.42</p>
+          <p class="data-viz-card-change negative"><i class="fa fa-arrow-down mr-1"></i>1.5%</p>
+        </div>
+        <div class="data-viz-card">
+          <p class="data-viz-card-title">水能价格</p>
+          <p class="data-viz-card-value" id="hydro-price">¥0.38</p>
+          <p class="data-viz-card-change positive"><i class="fa fa-arrow-up mr-1"></i>0.8%</p>
+        </div>
+        <div class="data-viz-card">
+          <p class="data-viz-card-title">今日交易量</p>
+          <p class="data-viz-card-value" id="trade-volume">2.45亿 kWh</p>
+          <p class="data-viz-card-change positive"><i class="fa fa-arrow-up mr-1"></i>5.7%</p>
+        </div>
+      </div>
+      <div class="mt-6">
+        <canvas id="energy-chart" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- 新闻公告区域 -->
+    <div class="news-container">
+      <h3 class="news-title">最新公告</h3>
+      <div id="news-list" class="space-y-4">
+        <div class="news-item">
+          <a href="#" class="news-item-title">国家能源局发布新能源发展五年规划</a>
+          <p class="news-item-date">2023-05-15</p>
+        </div>
+        <div class="news-item">
+          <a href="#" class="news-item-title">平台交易额突破百亿，清洁能源交易占比达85%</a>
+          <p class="news-item-date">2023-05-10</p>
+        </div>
+        <div class="news-item">
+          <a href="#" class="news-item-title">新能源补贴政策调整，市场化交易迎来新机遇</a>
+          <p class="news-item-date">2023-05-05</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer-container">
+    <div class="footer-content">
+      <div>
+        <h4 class="footer-section-title">关于我们</h4>
+        <p class="text-gray-300 mb-4">新能源交易平台致力于为您提供高效、透明的可再生能源交易服务。</p>
+        <div class="flex">
+          <a href="#" class="footer-social-icon"><i class="fa fa-weixin"></i></a>
+          <a href="#" class="footer-social-icon"><i class="fa fa-weibo"></i></a>
+          <a href="#" class="footer-social-icon"><i class="fa fa-linkedin"></i></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-section-title">快速链接</h4>
+        <ul class="space-y-2">
+          <li><a href="#" class="footer-link">首页</a></li>
+          <li><a href="#" class="footer-link">市场行情</a></li>
+          <li><a href="#" class="footer-link">交易指南</a></li>
+          <li><a href="#" class="footer-link">新闻公告</a></li>
+          <li><a href="#" class="footer-link">关于我们</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-section-title">联系我们</h4>
+        <ul class="space-y-2">
+          <li class="flex items-center text-gray-300">
+            <i class="fa fa-map-marker mr-2"></i>
+            <span>北京市朝阳区科技园A座1001室</span>
+          </li>
+          <li class="flex items-center text-gray-300">
+            <i class="fa fa-phone mr-2"></i>
+            <span>400-123-4567</span>
+          </li>
+          <li class="flex items-center text-gray-300">
+            <i class="fa fa-envelope mr-2"></i>
+            <span>contact@energytrade.com</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <p>© 2023 新能源交易平台. 保留所有权利.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 模拟用户登录状态
+    const userId = true;
+    const welcomeMessage = document.querySelector('.welcome-message');
+    if (userId) {
+      setTimeout(() => {
+        welcomeMessage.classList.remove('opacity-0');
+        welcomeMessage.classList.add('opacity-100');
+      }, 500);
+    }
+
+    // 时间更新函数
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('time-text').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // 平台简介卡片交互
+    const platformCard = document.getElementById('platform-card');
+    const cardContent = platformCard.querySelector('.card-content');
+    let fullHeight = 0;
+
+    // 确保内容加载完成后获取正确高度
+    document.addEventListener('DOMContentLoaded', () => {
+      // 临时显示内容以获取高度
+      cardContent.style.maxHeight = '1000px';
+      fullHeight = cardContent.scrollHeight;
+      cardContent.style.maxHeight = '0px';
+      
+      // 绑定点击事件
+      platformCard.addEventListener('click', () => {
+        platformCard.classList.toggle('card-expanded');
+        if (platformCard.classList.contains('card-expanded')) {
+          cardContent.style.maxHeight = `${fullHeight}px`;
+        } else {
+          cardContent.style.maxHeight = '0px';
+        }
+      });
+    });
+
+    // 轮播图交互
+    const carouselSlides = document.getElementById('carousel-slides');
+    const carouselIndicators = document.querySelectorAll('.carousel-indicator');
+    const prevSlideBtn = document.getElementById('prev-slide');
+    const nextSlideBtn = document.getElementById('next-slide');
+    let currentSlide = 0;
+    let carouselInterval;
+
+    function goToSlide(index) {
+      // 移除所有幻灯片的 active 类
+      document.querySelectorAll('.carousel-slide').forEach(slide => {
+        slide.classList.remove('active');
+        const title = slide.querySelector('.carousel-title');
+        const desc = slide.querySelector('.carousel-desc');
+        title.classList.remove('opacity-100', 'translate-y-0');
+        title.classList.add('opacity-0', 'translate-y-4');
+        desc.classList.remove('opacity-100', 'translate-y-0');
+        desc.classList.add('opacity-0', 'translate-y-4');
+      });
+
+      // 添加当前幻灯片的 active 类
+      const slide = document.querySelectorAll('.carousel-slide')[index];
+      slide.classList.add('active');
+      setTimeout(() => {
+        const title = slide.querySelector('.carousel-title');
+        const desc = slide.querySelector('.carousel-desc');
+        title.classList.remove('opacity-0', 'translate-y-4');
+        title.classList.add('opacity-100', 'translate-y-0');
+        desc.classList.remove('opacity-0', 'translate-y-4');
+        desc.classList.add('opacity-100', 'translate-y-0');
+      }, 100);
+
+      // 更新轮播图位置
+      carouselSlides.style.transform = `translateX(-${index * 100}%)`;
+      
+      // 更新指示器
+      carouselIndicators.forEach((indicator, i) => {
+        indicator.classList.toggle('active', i === index);
+      });
+
+      // 重置自动轮播计时器
+      resetCarouselInterval();
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % carouselIndicators.length;
+      goToSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + carouselIndicators.length) % carouselIndicators.length;
+      goToSlide(currentSlide);
+    }
+
+    function resetCarouselInterval() {
+      clearInterval(carouselInterval);
+      carouselInterval = setInterval(nextSlide, 5000);
+    }
+
+    // 初始化轮播图
+    carouselIndicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', () => {
+        goToSlide(index);
+      });
+    });
+
+    prevSlideBtn.addEventListener('click', prevSlide);
+    nextSlideBtn.addEventListener('click', nextSlide);
+
+    // 开始自动轮播
+    resetCarouselInterval();
+
+    // 数据可视化 - 使用 Chart.js
+    const ctx = document.getElementById('energy-chart').getContext('2d');
+    const energyChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+        datasets: [
+          {
+            label: '太阳能',
+            data: [65, 78, 82, 75, 90, 85],
+            borderColor: '#2E8B57',
+            backgroundColor: 'rgba(46, 139, 87, 0.1)',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: '风能',
+            data: [55, 65, 70, 68, 75, 72],
+            borderColor: '#4169E1',
+            backgroundColor: 'rgba(65, 105, 225, 0.1)',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: '水能',
+            data: [45, 50, 55, 60, 65, 70],
+            borderColor: '#9370DB',
+            backgroundColor: 'rgba(147, 112, 219, 0.1)',
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // 模拟数据实时更新
+    function updateMarketData() {
+      // 随机波动太阳能价格
+      const solarPrice = document.getElementById('solar-price');
+      const currentSolarPrice = parseFloat(solarPrice.textContent.replace('¥', ''));
+      const newSolarPrice = (currentSolarPrice + (Math.random() * 0.04 - 0.02)).toFixed(2);
+      solarPrice.textContent = `¥${newSolarPrice}`;
+      
+      // 随机波动风能价格
+      const windPrice = document.getElementById('wind-price');
+      const currentWindPrice = parseFloat(windPrice.textContent.replace('¥', ''));
+      const newWindPrice = (currentWindPrice + (Math.random() * 0.04 - 0.02)).toFixed(2);
+      windPrice.textContent = `¥${newWindPrice}`;
+      
+      // 随机波动水能价格
+      const hydroPrice = document.getElementById('hydro-price');
+      const currentHydroPrice = parseFloat(hydroPrice.textContent.replace('¥', ''));
+      const newHydroPrice = (currentHydroPrice + (Math.random() * 0.04 - 0.02)).toFixed(2);
+      hydroPrice.textContent = `¥${newHydroPrice}`;
+      
+      // 随机波动交易量
+      const tradeVolume = document.getElementById('trade-volume');
+      const currentVolume = parseFloat(tradeVolume.textContent);
+      const newVolume = (currentVolume + (Math.random() * 0.2 - 0.1)).toFixed(2);
+      tradeVolume.textContent = `${newVolume}亿 kWh`;
+      
+      // 更新图表数据
+      const datasets = energyChart.data.datasets;
+      datasets.forEach(dataset => {
+        // 移除第一个数据点，添加新的数据点
+        dataset.data.shift();
+        dataset.data.push(Math.floor(Math.random() * 30) + 60);
+      });
+      energyChart.update();
+    }
+
+    // 每5秒更新一次市场数据
+    setInterval(updateMarketData, 5000);
+  </script>
+</body>
+</html>

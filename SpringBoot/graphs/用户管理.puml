@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+actor "企业用户" as User
+
+rectangle "系统" {
+    usecase "信息修改" as InfoModify
+    usecase "密码重置" as PasswordReset
+}
+
+User --> InfoModify : 修改企业名称、手机号等基本信息
+InfoModify --> System : 验证新信息
+System --> InfoModify : 更新信息
+
+User --> PasswordReset : 按照系统提示步骤操作
+PasswordReset --> System : 验证身份
+System --> PasswordReset : 修改密码
+@enduml

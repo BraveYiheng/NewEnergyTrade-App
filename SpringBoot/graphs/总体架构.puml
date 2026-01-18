@@ -1,0 +1,51 @@
+@startuml
+package "前端展示层" {
+    component "登录注册页面" as login_register
+    component "采购商主页面" as purchaser_page
+    component "供应商主页面" as supplier_page
+    component "产品展示与搜索页面" as product_page
+    component "订单管理页面" as order_page
+    component "评价与反馈页面" as evaluation_feedback_page
+}
+
+package "业务逻辑层" {
+    component "用户管理业务逻辑" as user_management_logic
+    component "产品管理业务逻辑" as product_management_logic
+    component "订单管理业务逻辑" as order_management_logic
+    component "评价反馈业务逻辑" as evaluation_feedback_logic
+}
+
+package "数据持久层" {
+    component "MyBatis Plus" as mybatis_plus
+}
+
+package "数据库层" {
+    component "用户表" as user_table
+    component "产品表" as product_table
+    component "订单表" as order_table
+    component "评价表" as evaluation_table
+    component "反馈表" as feedback_table
+}
+
+login_register -- user_management_logic : 调用用户注册登录逻辑
+purchaser_page -- user_management_logic : 获取用户信息及权限
+purchaser_page -- product_page : 搜索、浏览产品
+purchaser_page -- order_page : 管理订单
+purchaser_page -- evaluation_feedback_page : 进行评价与反馈
+supplier_page -- user_management_logic : 获取用户信息及权限
+supplier_page -- product_page : 管理产品
+supplier_page -- order_page : 管理订单
+supplier_page -- evaluation_feedback_page : 进行评价与反馈
+product_page -- product_management_logic : 执行产品操作逻辑
+order_page -- order_management_logic : 处理订单业务逻辑
+evaluation_feedback_page -- evaluation_feedback_logic : 处理评价反馈逻辑
+user_management_logic -- mybatis_plus : 数据库操作
+product_management_logic -- mybatis_plus : 数据库操作
+order_management_logic -- mybatis_plus : 数据库操作
+evaluation_feedback_logic -- mybatis_plus : 数据库操作
+mybatis_plus -- user_table : 数据交互
+mybatis_plus -- product_table : 数据交互
+mybatis_plus -- order_table : 数据交互
+mybatis_plus -- evaluation_table : 数据交互
+mybatis_plus -- feedback_table : 数据交互
+@enduml

@@ -1,0 +1,72 @@
+
+    /* 整体页面布局调整，使内容在页面中合理显示 */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+
+/* 登录和注册容器通用样式，统一风格并使其更美观 */
+.form-container {
+    width: 400px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px;
+}
+
+/* 标题样式，增强视觉效果，使其更突出 */
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* 表单内输入框样式微调，增加间距等 */
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    margin-bottom: 15px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+/* 按钮样式，统一宽度、增加间距和鼠标悬停效果 */
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+
+/* 切换链接样式，类似按钮效果，颜色等更协调 */
+.switch-link {
+    text-align: center;
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.switch-link:hover {
+    text-decoration: underline;
+}
+
