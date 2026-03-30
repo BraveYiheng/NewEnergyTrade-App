@@ -1,2 +1,2 @@
 # NewEnergyTrade-App
-一个新能源交易平台
+基于SpringBoot的新能源交易平台
